@@ -160,79 +160,104 @@
           <div class="drawer-title-row">
             <span class="drawer-title">Data Center Directory</span>
             <div style="display: flex; align-items: center; gap: 6px;">
-              <button class="m3-btn m3-btn-tonal" id="btn-drawer-upload-csv" style="padding: 4px 10px; font-size: 11px;" title="Upload and replace dataset from CSV">
-                📁 Upload CSV
-              </button>
-              <button class="m3-btn m3-btn-primary" id="btn-open-add-dialog" style="padding: 4px 10px; font-size: 11px;" title="Add a new data center">
+              <button class="m3-btn m3-btn-primary" id="btn-open-add-dialog" style="padding: 5px 11px; font-size: 11.5px;" title="Add a new data center">
                 + Add Facility
               </button>
-              <button class="close-drawer-btn" id="close-drawer-btn" title="Collapse Panel">
+              <button class="close-drawer-btn" id="close-drawer-btn" title="Close Panel">
                 <svg style="width: 20px; height: 20px; fill: currentColor;" viewBox="0 0 24 24">
                   <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                 </svg>
               </button>
             </div>
           </div>
-
-          <!-- M3 Search Field -->
-          <div class="search-field">
-            <svg style="width: 18px; height: 18px; fill: var(--md-sys-color-on-surface-variant);" viewBox="0 0 24 24">
-              <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-            </svg>
-            <input type="text" id="search-input" placeholder="Search (YTL, AirTrunk, Google, Vantage...)">
-          </div>
         </div>
 
-        <!-- Tabs -->
+        <!-- Tabs: Facilities | Analytics | Timeline -->
         <div class="drawer-tabs">
           <button class="drawer-tab active" data-tab="projects">Facilities</button>
           <button class="drawer-tab" data-tab="analytics">Analytics</button>
           <button class="drawer-tab" data-tab="milestones">Timeline</button>
         </div>
 
-        <!-- Filter Controls Container -->
-        <div class="filter-chips-container">
-          <!-- 1. Company / Operator Filter -->
-          <div style="margin-bottom: 2px;">
-            <div class="filter-group-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <span>🏢 Company / Operator</span>
-              <button id="btn-clear-filters" style="display: none; background: transparent; border: none; color: var(--md-sys-color-primary); font-size: 11px; font-weight: 600; cursor: pointer; text-decoration: underline;">Reset Filters</button>
-            </div>
-            <select id="filter-operator" class="form-select" style="width: 100%; padding: 7px 10px; font-size: 12px; border-radius: 8px;">
-              <option value="all">🏢 All Companies (All Facilities)</option>
-            </select>
-          </div>
-
-          <!-- 2. Colocation Purpose / Business Model Filter -->
-          <div style="margin-top: 6px;">
-            <div class="filter-group-label" style="margin-bottom: 4px;">Business Model / Purpose</div>
-            <div class="chips-row">
-              <button class="filter-chip active" data-group="colocation" data-val="all">All Models</button>
-              <button class="filter-chip" data-group="colocation" data-val="yes">🔑 Ready for Rent (Colo)</button>
-              <button class="filter-chip" data-group="colocation" data-val="no">🔒 Own Use (Private)</button>
+        <!-- Filter & Search Controls Container (Only active for Facilities tab) -->
+        <div class="drawer-filter-section" id="drawer-filter-section">
+          <!-- Search Field -->
+          <div class="drawer-search-wrap">
+            <div class="search-field" id="drawer-search-field">
+              <svg style="width: 17px; height: 17px; fill: var(--md-sys-color-on-surface-variant); flex-shrink: 0;" viewBox="0 0 24 24">
+                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+              </svg>
+              <input type="text" id="search-input" placeholder="Search facilities, operators, locations...">
             </div>
           </div>
 
-          <!-- 3. Operational Status Chips -->
-          <div style="margin-top: 6px;">
-            <div class="filter-group-label" style="margin-bottom: 4px;">Operational Status</div>
-            <div class="chips-row">
-              <button class="filter-chip active" data-group="status" data-val="all">All Status</button>
-              <button class="filter-chip" data-group="status" data-val="operational" style="border-color: rgba(16, 185, 129, 0.4);">🟢 Operational</button>
-              <button class="filter-chip" data-group="status" data-val="operational-expansion" style="border-color: rgba(6, 182, 212, 0.4);">🔵 Expanding</button>
-              <button class="filter-chip" data-group="status" data-val="under-construction" style="border-color: rgba(234, 179, 8, 0.4);">🟡 In Construction</button>
-              <button class="filter-chip" data-group="status" data-val="planned" style="border-color: rgba(168, 85, 247, 0.4);">🟣 Planned</button>
+          <!-- Compact Filter Bar with Collapsible Accordion Toggle -->
+          <div class="drawer-filter-bar">
+            <button type="button" class="filter-toggle-btn" id="btn-toggle-drawer-filters">
+              <svg style="width: 15px; height: 15px; fill: currentColor;" viewBox="0 0 24 24">
+                <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+              </svg>
+              <span>Filters & Criteria</span>
+              <span class="filter-active-badge" id="filter-active-badge" style="display: none;">0</span>
+              <svg class="filter-chevron-icon" id="filter-chevron" style="width: 15px; height: 15px; fill: currentColor; transition: transform 0.25s;" viewBox="0 0 24 24">
+                <path d="M7 10l5 5 5-5z"/>
+              </svg>
+            </button>
+
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="facility-count-indicator" id="facility-count-indicator">48 Facilities</span>
+              <button id="btn-clear-filters" class="quick-reset-btn" style="display: none;" title="Reset all filters">Reset</button>
             </div>
           </div>
 
-          <!-- 4. Region / Cluster Chips -->
-          <div style="margin-top: 6px;">
-            <div class="filter-group-label" style="margin-bottom: 4px;">Region / Cluster</div>
-            <div class="chips-row">
-              <button class="filter-chip active" data-group="state" data-val="all">All Regions</button>
-              <button class="filter-chip" data-group="state" data-val="Johor">Johor</button>
-              <button class="filter-chip" data-group="state" data-val="Selangor">Selangor (Cyberjaya)</button>
-              <button class="filter-chip" data-group="state" data-val="Kuala Lumpur">Kuala Lumpur</button>
+          <!-- Collapsible Filter Panel (Accordion: Company, Model, Status, Region) -->
+          <div class="filter-chips-container collapsed" id="drawer-filter-panel">
+            <!-- 1. Company / Operator Filter -->
+            <div style="margin-bottom: 4px;">
+              <div class="filter-group-label" style="margin-bottom: 4px;">🏢 Company / Operator</div>
+              <select id="filter-operator" class="form-select" style="width: 100%; padding: 7px 10px; font-size: 13px; border-radius: 8px;">
+                <option value="all">🏢 All Companies (All Facilities)</option>
+              </select>
+            </div>
+
+            <!-- 2. Colocation Purpose / Business Model Filter -->
+            <div style="margin-top: 6px;">
+              <div class="filter-group-label" style="margin-bottom: 4px;">Business Model / Purpose</div>
+              <div class="chips-row">
+                <button class="filter-chip active" data-group="colocation" data-val="all">All Models</button>
+                <button class="filter-chip" data-group="colocation" data-val="yes">🔑 Ready for Rent (Colo)</button>
+                <button class="filter-chip" data-group="colocation" data-val="no">🔒 Own Use (Private)</button>
+              </div>
+            </div>
+
+            <!-- 3. Operational Status Chips -->
+            <div style="margin-top: 6px;">
+              <div class="filter-group-label" style="margin-bottom: 4px;">Operational Status</div>
+              <div class="chips-row">
+                <button class="filter-chip active" data-group="status" data-val="all">All Status</button>
+                <button class="filter-chip" data-group="status" data-val="operational" style="border-color: rgba(16, 185, 129, 0.4);">🟢 Operational</button>
+                <button class="filter-chip" data-group="status" data-val="operational-expansion" style="border-color: rgba(6, 182, 212, 0.4);">🔵 Expanding</button>
+                <button class="filter-chip" data-group="status" data-val="under-construction" style="border-color: rgba(234, 179, 8, 0.4);">🟡 In Construction</button>
+                <button class="filter-chip" data-group="status" data-val="planned" style="border-color: rgba(168, 85, 247, 0.4);">🟣 Planned</button>
+              </div>
+            </div>
+
+            <!-- 4. Region / Cluster Chips -->
+            <div style="margin-top: 6px;">
+              <div class="filter-group-label" style="margin-bottom: 4px;">Region / Cluster</div>
+              <div class="chips-row">
+                <button class="filter-chip active" data-group="state" data-val="all">All Regions</button>
+                <button class="filter-chip" data-group="state" data-val="Johor">Johor</button>
+                <button class="filter-chip" data-group="state" data-val="Selangor">Selangor (Cyberjaya)</button>
+                <button class="filter-chip" data-group="state" data-val="Kuala Lumpur">Kuala Lumpur</button>
+              </div>
+            </div>
+
+            <!-- Panel Actions Footer -->
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--md-sys-color-outline-variant);">
+              <button type="button" class="m3-btn m3-btn-tonal" id="btn-close-filter-panel" style="padding: 5px 12px; font-size: 11px;">
+                Close Filter Panel ▲
+              </button>
             </div>
           </div>
         </div>

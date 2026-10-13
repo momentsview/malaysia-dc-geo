@@ -344,6 +344,16 @@ class DataCenterApp {
     this.btnCloseAdminAuth = document.getElementById("btn-close-admin-auth");
     this.btnCancelAdminAuth = document.getElementById("btn-cancel-admin-auth");
     this.authErrorMsg = document.getElementById("auth-error-msg");
+
+    // Drawer Filter & Tab Elements
+    this.drawerFilterSection = document.getElementById("drawer-filter-section");
+    this.drawerSearchField = document.getElementById("drawer-search-field");
+    this.btnToggleDrawerFilters = document.getElementById("btn-toggle-drawer-filters");
+    this.drawerFilterPanel = document.getElementById("drawer-filter-panel");
+    this.filterActiveBadge = document.getElementById("filter-active-badge");
+    this.filterChevron = document.getElementById("filter-chevron");
+    this.btnCloseFilterPanel = document.getElementById("btn-close-filter-panel");
+    this.facilityCountIndicator = document.getElementById("facility-count-indicator");
   }
 
   initEvents() {
@@ -518,15 +528,34 @@ class DataCenterApp {
       });
     });
 
-    // 3. Tab Switching
+    // 3. Tab Switching (Isolates Search & Filters exclusively to Facilities tab)
     document.querySelectorAll(".drawer-tab").forEach(tab => {
       tab.addEventListener("click", () => {
         document.querySelectorAll(".drawer-tab").forEach(t => t.classList.remove("active"));
         tab.classList.add("active");
         this.activeTab = tab.dataset.tab;
+
+        // Isolate Filters & Search strictly to Facilities tab
+        if (this.drawerFilterSection) {
+          this.drawerFilterSection.style.display = this.activeTab === "projects" ? "block" : "none";
+        }
+
         this.renderDrawerTabContent();
       });
     });
+
+    // 3b. Drawer Filter Panel Accordion Toggle
+    if (this.btnToggleDrawerFilters && this.drawerFilterPanel) {
+      this.btnToggleDrawerFilters.addEventListener("click", () => {
+        this.toggleDrawerFilterPanel();
+      });
+    }
+
+    if (this.btnCloseFilterPanel) {
+      this.btnCloseFilterPanel.addEventListener("click", () => {
+        this.closeDrawerFilterPanel();
+      });
+    }
 
     // 4. Color Mode Toggle (Capacity vs Status)
     document.querySelectorAll(".color-mode-btn").forEach(btn => {
@@ -1006,10 +1035,32 @@ class DataCenterApp {
     const activeIds = this.filteredData.map(dc => dc.id);
     this.map.setFilteredIds(activeIds);
 
-    // Toggle Clear Filters button
+    // Toggle Clear Filters button & Badge indicators
     const isFiltered = search !== "" || operator !== "all" || colocation !== "all" || state !== "all" || status !== "all" || tier !== "all";
     if (this.btnClearFilters) {
-      this.btnClearFilters.style.display = isFiltered ? "inline" : "none";
+      this.btnClearFilters.style.display = isFiltered ? "inline-block" : "none";
+    }
+
+    let activeFilterCount = 0;
+    if (operator !== "all") activeFilterCount++;
+    if (colocation !== "all") activeFilterCount++;
+    if (state !== "all") activeFilterCount++;
+    if (status !== "all") activeFilterCount++;
+    if (tier !== "all") activeFilterCount++;
+
+    if (this.filterActiveBadge) {
+      if (activeFilterCount > 0) {
+        this.filterActiveBadge.style.display = "inline-block";
+        this.filterActiveBadge.innerText = activeFilterCount;
+        if (this.btnToggleDrawerFilters) this.btnToggleDrawerFilters.classList.add("has-active");
+      } else {
+        this.filterActiveBadge.style.display = "none";
+        if (this.btnToggleDrawerFilters) this.btnToggleDrawerFilters.classList.remove("has-active");
+      }
+    }
+
+    if (this.facilityCountIndicator) {
+      this.facilityCountIndicator.innerText = `${this.filteredData.length} Facilities`;
     }
 
     // Update Project List & KPI Counters & Data Table
@@ -1215,6 +1266,24 @@ class DataCenterApp {
         this.renderProjectCards();
       });
     });
+  }
+
+  toggleDrawerFilterPanel(forceState) {
+    if (!this.drawerFilterPanel) return;
+    const isCollapsed = this.drawerFilterPanel.classList.contains("collapsed");
+    const shouldCollapse = typeof forceState === "boolean" ? forceState : !isCollapsed;
+
+    if (shouldCollapse) {
+      this.drawerFilterPanel.classList.add("collapsed");
+      if (this.filterChevron) this.filterChevron.style.transform = "rotate(0deg)";
+    } else {
+      this.drawerFilterPanel.classList.remove("collapsed");
+      if (this.filterChevron) this.filterChevron.style.transform = "rotate(180deg)";
+    }
+  }
+
+  closeDrawerFilterPanel() {
+    this.toggleDrawerFilterPanel(true);
   }
 
   setMainView(view) {
