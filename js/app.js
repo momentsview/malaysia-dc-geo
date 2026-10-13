@@ -243,7 +243,7 @@ class DataCenterApp {
       sessionStorage.setItem("MALAYSIA_DC_ADMIN_AUTH", "1");
       this.updateAdminUI();
       if (this.adminAuthDialog) this.adminAuthDialog.classList.remove("active");
-      this.showToast(`Admin authenticated as ${ADMIN_AUTH_CONFIG.usernameDisplay}. Access unlocked!`);
+      this.showToast("Admin authenticated. Access unlocked!");
 
       const nextAction = this.pendingAdminAction;
       this.pendingAdminAction = null;
