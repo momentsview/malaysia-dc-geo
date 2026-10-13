@@ -317,6 +317,29 @@
         </button>
       </div>
 
+      <!-- ====================================================================
+           Map Status & Purpose Legend (Bottom Right)
+           ==================================================================== -->
+      <div class="map-legend-card" id="map-legend-card">
+        <div class="legend-header">
+          <div class="legend-title-wrap">
+            <span class="legend-icon-badge">🗺️</span>
+            <span class="legend-title">Facility Legend</span>
+          </div>
+          <button type="button" class="legend-collapse-btn" id="btn-toggle-legend" title="Minimize / Expand Legend">
+            <svg class="legend-chevron" id="legend-chevron" style="width: 14px; height: 14px; fill: currentColor; transition: transform 0.25s;" viewBox="0 0 24 24">
+              <path d="M7 10l5 5 5-5z"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="legend-body" id="legend-body">
+          <div class="legend-items" id="legend-items-list">
+            <!-- Rendered dynamically by app.js updateLegendUI() -->
+          </div>
+        </div>
+      </div>
+
 
 
       <!-- ====================================================================

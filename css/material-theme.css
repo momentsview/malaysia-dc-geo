@@ -924,81 +924,121 @@ body, html {
 }
 
 /* ==========================================================================
-   5. Interactive Capacity & Status Legend (Bottom-Left)
+   5. Interactive Status & Purpose Legend (Bottom-Right)
    ========================================================================== */
 .map-legend-card {
   position: absolute;
-  bottom: 80px;
-  right: 20px;
-  background: rgba(15, 23, 42, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  bottom: 16px;
+  right: 16px;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--md-sys-color-outline);
   border-radius: 18px;
-  padding: 14px 16px;
+  padding: 12px 14px;
   z-index: 25;
-  box-shadow: var(--md-sys-elevation-3);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45), 0 0 15px rgba(56, 189, 248, 0.15);
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  min-width: 250px;
+  gap: 8px;
+  width: 232px;
+  max-width: calc(100vw - 32px);
+  transition: all 0.25s var(--md-sys-motion-standard);
+  user-select: none;
+}
+
+.map-legend-card.collapsed {
+  width: auto;
+  min-width: 150px;
+  padding: 7px 12px;
+}
+
+.map-legend-card.collapsed .legend-body {
+  display: none;
+}
+
+.map-legend-card.collapsed .legend-chevron {
+  transform: rotate(180deg);
 }
 
 .legend-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+}
+
+.legend-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-icon-badge {
+  font-size: 13px;
 }
 
 .legend-title {
   font-size: 12px;
   font-weight: 700;
   color: #ffffff;
+  letter-spacing: -0.2px;
 }
 
-.color-mode-toggle {
-  display: flex;
-  background: var(--md-sys-color-surface-container);
-  border-radius: 9999px;
-  padding: 2px;
-}
-
-.color-mode-btn {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 9999px;
-  border: none;
+.legend-collapse-btn {
   background: transparent;
+  border: none;
   color: var(--md-sys-color-on-surface-variant);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.15s, color 0.15s;
 }
 
-.color-mode-btn.active {
-  background: var(--md-sys-color-primary);
-  color: #0b1120;
+.legend-collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.legend-section-title {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-top: 2px;
+  margin-bottom: 2px;
 }
 
 .legend-items {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .legend-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 11.5px;
   cursor: pointer;
-  padding: 3px 6px;
+  padding: 5px 8px;
   border-radius: 8px;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s;
+  border: 1px solid transparent;
 }
 
 .legend-row:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.legend-row.active {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.4);
 }
 
 .legend-row-left {
@@ -1008,35 +1048,75 @@ body, html {
 }
 
 .legend-swatch {
-  width: 12px;
-  height: 12px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   flex-shrink: 0;
   display: inline-block;
 }
 
-.legend-row.active {
-  background: rgba(56, 189, 248, 0.15);
-  outline: 1px solid rgba(56, 189, 248, 0.35);
-}
-
 .legend-label {
   color: var(--md-sys-color-on-surface);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-sub-text {
+  font-size: 10px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: normal;
 }
 
 .legend-count {
   font-weight: 700;
   color: var(--md-sys-color-on-surface-variant);
-  font-size: 10px;
+  font-size: 11px;
+  font-feature-settings: "tnum";
 }
 
-/* 3D Height Scale Helper */
-.legend-3d-hint {
+.legend-divider {
+  height: 1px;
+  background: var(--md-sys-color-outline-variant);
+  margin: 4px 0;
+}
+
+.legend-model-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.legend-model-chip {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-top: 6px;
-  border-top: 1px solid var(--md-sys-color-outline-variant);
+  justify-content: space-between;
+  padding: 4px 8px;
+  border-radius: 7px;
+  font-size: 10.5px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid var(--md-sys-color-outline);
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--md-sys-color-on-surface);
+}
+
+.legend-model-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.legend-model-chip.active {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: var(--md-sys-color-primary);
+  color: #ffffff;
+}
+
+.model-chip-icon {
+  margin-right: 4px;
+}
+
+.model-chip-count {
+  font-weight: 700;
   font-size: 10px;
   color: var(--md-sys-color-on-surface-variant);
 }
@@ -1541,28 +1621,13 @@ body, html {
     height: 38px;
   }
 
-  .timeline-bar {
+  .map-legend-card {
     position: fixed;
-    bottom: calc(10px + env(safe-area-inset-bottom));
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 20px);
-    max-width: 420px;
-    padding: 6px 12px;
-    border-radius: 16px;
-    z-index: 900;
-  }
-
-  .timeline-milestones-row {
-    margin-top: 4px;
-  }
-
-  .timeline-milestone-text {
-    font-size: 10.5px;
-    line-height: 1.25;
-    max-height: 30px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    right: 12px;
+    width: auto;
+    max-width: 220px;
+    padding: 9px 11px;
   }
 
   /* 4. Full-Screen Drawer on Mobile */
@@ -2946,24 +3011,64 @@ body, html {
   color: #0f172a;
 }
 
-[data-theme="light"] .legend-overlay {
-  background: rgba(255, 255, 255, 0.96);
+[data-theme="light"] .map-legend-card {
+  background: rgba(255, 255, 255, 0.94);
   border: 1px solid #cbd5e1;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08), 0 0 10px rgba(2, 132, 199, 0.1);
 }
 
 [data-theme="light"] .legend-title {
   color: #0f172a;
 }
 
+[data-theme="light"] .legend-section-title {
+  color: #64748b;
+}
+
 [data-theme="light"] .legend-label {
-  color: #334155;
+  color: #1e293b;
+}
+
+[data-theme="light"] .legend-sub-text {
+  color: #64748b;
 }
 
 [data-theme="light"] .legend-count {
+  color: #475569;
+}
+
+[data-theme="light"] .legend-row:hover {
+  background: #f1f5f9;
+}
+
+[data-theme="light"] .legend-row.active {
+  background: #e0f2fe;
+  border-color: #0284c7;
+}
+
+[data-theme="light"] .legend-divider {
+  background: #e2e8f0;
+}
+
+[data-theme="light"] .legend-model-chip {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+[data-theme="light"] .legend-model-chip:hover {
+  background: #f1f5f9;
+}
+
+[data-theme="light"] .legend-model-chip.active {
+  background: #e0f2fe;
+  border-color: #0284c7;
+  color: #0284c7;
+}
+
+[data-theme="light"] .legend-collapse-btn:hover {
   background: #f1f5f9;
   color: #0f172a;
-  border: 1px solid #cbd5e1;
 }
 
 [data-theme="light"] .timeline-bar {

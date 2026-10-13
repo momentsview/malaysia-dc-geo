@@ -298,6 +298,8 @@ class DataCenterApp {
     this.timelineBar = document.querySelector(".timeline-bar");
     this.openDrawerBtn = document.getElementById("open-drawer-btn");
     this.presetNavigation = document.querySelector(".preset-navigation");
+    this.mapLegendCard = document.getElementById("map-legend-card");
+    this.btnToggleLegend = document.getElementById("btn-toggle-legend");
 
     // List View Filter Controls
     this.listSearchInput = document.getElementById("list-search-input");
@@ -667,6 +669,13 @@ class DataCenterApp {
     if (this.playTimelineBtn) {
       this.playTimelineBtn.addEventListener("click", () => {
         this.toggleTimelinePlay();
+      });
+    }
+
+    // Toggle Map Legend Collapse
+    if (this.btnToggleLegend && this.mapLegendCard) {
+      this.btnToggleLegend.addEventListener("click", () => {
+        this.mapLegendCard.classList.toggle("collapsed");
       });
     }
 
@@ -1067,6 +1076,7 @@ class DataCenterApp {
     this.updateStatsCounters();
     this.renderDrawerTabContent();
     this.renderListView();
+    this.updateLegendUI();
   }
 
   updateStatsCounters() {
@@ -1300,6 +1310,7 @@ class DataCenterApp {
       if (this.floatingMapControls) this.floatingMapControls.style.display = "none";
       if (this.timelineBar) this.timelineBar.style.display = "none";
       if (this.presetNavigation) this.presetNavigation.style.display = "none";
+      if (this.mapLegendCard) this.mapLegendCard.style.display = "none";
 
       this.renderListView();
     } else {
@@ -1313,6 +1324,7 @@ class DataCenterApp {
       if (this.floatingMapControls) this.floatingMapControls.style.display = "flex";
       if (this.timelineBar) this.timelineBar.style.display = "flex";
       if (this.presetNavigation) this.presetNavigation.style.display = "flex";
+      if (this.mapLegendCard) this.mapLegendCard.style.display = "flex";
 
       // Invalidate Leaflet map size after displaying
       setTimeout(() => {
@@ -1744,115 +1756,111 @@ class DataCenterApp {
     const legendItemsEl = document.getElementById("legend-items-list");
     if (!legendItemsEl) return;
 
-    // Calculate real-time counts for each status and model
-    const statusCounts = {
-      "operational": 0,
-      "operational-expansion": 0,
-      "under-construction": 0,
-      "planned": 0
-    };
+    // Calculate real-time counts for operational, in-construction, planned, and business models
+    let operationalCount = 0;
+    let underConstructionCount = 0;
+    let plannedCount = 0;
     let ownUseCount = 0;
+    let colocationCount = 0;
 
     this.allData.forEach(dc => {
       const isColo = dc.isColocation !== false && dc.colocation !== "No";
       if (!isColo) {
         ownUseCount++;
-      } else if (statusCounts[dc.status] !== undefined) {
-        statusCounts[dc.status]++;
+      } else {
+        colocationCount++;
+      }
+
+      if (dc.status === "operational" || dc.status === "operational-expansion") {
+        operationalCount++;
+      } else if (dc.status === "under-construction") {
+        underConstructionCount++;
+      } else if (dc.status === "planned") {
+        plannedCount++;
       }
     });
 
-    if (this.colorMode === "capacity") {
-      let html = "";
-      CAPACITY_TIERS.forEach(tier => {
-        const barH = Math.round(tier.scaleFactor * 16);
-        const count = this.allData.filter(d => getCapacityTier(d.capacityMW).id === tier.id).length;
-        const isActive = this.filters.tier === tier.id ? "active" : "";
-        html += `
-          <div class="legend-row ${isActive}" data-tier="${tier.id}">
-            <div class="legend-row-left">
-              <div style="display: flex; align-items: flex-end; width: 14px; height: 18px;">
-                <div style="width: 10px; height: ${barH}px; background: ${tier.color}; border-radius: 2px; box-shadow: 0 0 6px ${tier.color};"></div>
-              </div>
-              <span class="legend-label">${tier.label}</span>
-            </div>
-            <span class="legend-count">${count}</span>
-          </div>
-        `;
-      });
-      legendItemsEl.innerHTML = html;
-    } else {
-      const isOpActive = this.filters.status === "operational" ? "active" : "";
-      const isExpActive = this.filters.status === "operational-expansion" ? "active" : "";
-      const isConActive = this.filters.status === "under-construction" ? "active" : "";
-      const isPlanActive = this.filters.status === "planned" ? "active" : "";
-      const isOwnActive = this.filters.colocation === "no" ? "active" : "";
+    const isOpActive = (this.filters.status === "operational" || this.filters.status === "operational-expansion") ? "active" : "";
+    const isConActive = this.filters.status === "under-construction" ? "active" : "";
+    const isPlanActive = this.filters.status === "planned" ? "active" : "";
+    const isColoActive = this.filters.colocation === "yes" ? "active" : "";
+    const isOwnActive = this.filters.colocation === "no" ? "active" : "";
 
-      let html = `
-        <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;">
-          🔑 Ready for Rent (Colocation)
+    let html = `
+      <div class="legend-section-title">Status Colors</div>
+      
+      <!-- Green: Operational -->
+      <div class="legend-row ${isOpActive}" data-status="operational" title="Filter Operational facilities (Green)">
+        <div class="legend-row-left">
+          <div class="legend-swatch" style="background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.75);"></div>
+          <span class="legend-label"><strong>Operational</strong></span>
         </div>
-        <div class="legend-row ${isOpActive}" data-status="operational" title="Filter by Fully Operational">
-          <div class="legend-row-left">
-            <div class="legend-swatch" style="background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);"></div>
-            <span class="legend-label">Fully Operational</span>
-          </div>
-          <span class="legend-count">${statusCounts["operational"]}</span>
-        </div>
-        <div class="legend-row ${isExpActive}" data-status="operational-expansion" title="Filter by Expanding Campus">
-          <div class="legend-row-left">
-            <div class="legend-swatch" style="background: #06b6d4; box-shadow: 0 0 8px rgba(6, 182, 212, 0.7);"></div>
-            <span class="legend-label">Expanding Campus</span>
-          </div>
-          <span class="legend-count">${statusCounts["operational-expansion"]}</span>
-        </div>
-        <div class="legend-row ${isConActive}" data-status="under-construction" title="Filter by Under Construction">
-          <div class="legend-row-left">
-            <div class="legend-swatch" style="background: #eab308; box-shadow: 0 0 8px rgba(234, 179, 8, 0.7);"></div>
-            <span class="legend-label">In Construction</span>
-          </div>
-          <span class="legend-count">${statusCounts["under-construction"]}</span>
-        </div>
-        <div class="legend-row ${isPlanActive}" data-status="planned" title="Filter by Planned / Concept">
-          <div class="legend-row-left">
-            <div class="legend-swatch" style="background: #a855f7; box-shadow: 0 0 8px rgba(168, 85, 247, 0.7);"></div>
-            <span class="legend-label">Planned / Concept</span>
-          </div>
-          <span class="legend-count">${statusCounts["planned"]}</span>
-        </div>
-        
-        <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin: 8px 0 3px; padding-top: 6px; border-top: 1px dashed rgba(255,255,255,0.15);">
-          🔒 Private Hyperscale (Own Use)
-        </div>
-        <div class="legend-row ${isOwnActive}" data-colocation="no" title="Filter by Own Use (Google, AWS, Microsoft)">
-          <div class="legend-row-left">
-            <div class="legend-swatch" style="background: #09090b; border: 1.5px solid #94a3b8; box-shadow: 0 0 5px rgba(255,255,255,0.25);"></div>
-            <span class="legend-label">Google, AWS, Microsoft</span>
-          </div>
-          <span class="legend-count">${ownUseCount}</span>
-        </div>
-      `;
-      legendItemsEl.innerHTML = html;
-    }
+        <span class="legend-count">${operationalCount}</span>
+      </div>
 
-    // Attach row filter click
+      <!-- Yellow / Orange: Purpose (In Construction) -->
+      <div class="legend-row ${isConActive}" data-status="under-construction" title="Filter In Construction / Purpose facilities (Yellow/Orange)">
+        <div class="legend-row-left">
+          <div class="legend-swatch" style="background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.75);"></div>
+          <span class="legend-label"><strong>Purpose</strong> <span class="legend-sub-text">(In Construction)</span></span>
+        </div>
+        <span class="legend-count">${underConstructionCount}</span>
+      </div>
+
+      <!-- Purple: Planned -->
+      <div class="legend-row ${isPlanActive}" data-status="planned" title="Filter Planned facilities (Purple)">
+        <div class="legend-row-left">
+          <div class="legend-swatch" style="background: #a855f7; box-shadow: 0 0 8px rgba(168, 85, 247, 0.75);"></div>
+          <span class="legend-label"><strong>Planned</strong></span>
+        </div>
+        <span class="legend-count">${plannedCount}</span>
+      </div>
+
+      <div class="legend-divider"></div>
+
+      <div class="legend-section-title">Business Model / Purpose</div>
+      <div class="legend-model-grid">
+        <div class="legend-model-chip ${isColoActive}" data-colocation="yes" title="Filter Ready for Rent (Colocation)">
+          <span><span class="model-chip-icon">🔑</span>Ready for Rent</span>
+          <span class="model-chip-count">${colocationCount}</span>
+        </div>
+        <div class="legend-model-chip ${isOwnActive}" data-colocation="no" title="Filter Own Use (Private Hyperscale)">
+          <span><span class="model-chip-icon">🔒</span>Own Use</span>
+          <span class="model-chip-count">${ownUseCount}</span>
+        </div>
+      </div>
+    `;
+
+    legendItemsEl.innerHTML = html;
+
+    // Attach click events for status filtering
     legendItemsEl.querySelectorAll(".legend-row").forEach(row => {
       row.addEventListener("click", () => {
-        if (this.colorMode === "capacity") {
-          const tierId = row.dataset.tier;
-          this.filters.tier = this.filters.tier === tierId ? "all" : tierId;
-        } else if (row.dataset.colocation) {
-          this.filters.colocation = this.filters.colocation === "no" ? "all" : "no";
-          document.querySelectorAll(`.filter-chip[data-group="colocation"]`).forEach(c => {
-            c.classList.toggle("active", c.dataset.val === this.filters.colocation);
-          });
+        const statusKey = row.dataset.status;
+        if (statusKey === "operational") {
+          this.filters.status = (this.filters.status === "operational" || this.filters.status === "operational-expansion") ? "all" : "operational";
         } else {
-          const statusKey = row.dataset.status;
           this.filters.status = this.filters.status === statusKey ? "all" : statusKey;
-          document.querySelectorAll(`.filter-chip[data-group="status"]`).forEach(c => {
-            c.classList.toggle("active", c.dataset.val === this.filters.status);
-          });
         }
+
+        document.querySelectorAll(`.filter-chip[data-group="status"]`).forEach(c => {
+          c.classList.toggle("active", c.dataset.val === this.filters.status);
+        });
+
+        this.applyFilters();
+      });
+    });
+
+    // Attach click events for colocation purpose filtering
+    legendItemsEl.querySelectorAll(".legend-model-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        const coloKey = chip.dataset.colocation;
+        this.filters.colocation = this.filters.colocation === coloKey ? "all" : coloKey;
+
+        document.querySelectorAll(`.filter-chip[data-group="colocation"]`).forEach(c => {
+          c.classList.toggle("active", c.dataset.val === this.filters.colocation);
+        });
+
         this.applyFilters();
       });
     });
