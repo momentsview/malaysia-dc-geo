@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Malaysia Data Centers 3D Geo | Geospatial Intel Platform</title>
+  <!-- Leaflet 2D Real Map CSS -->
+  <link rel="stylesheet" href="css/leaflet.css">
+  <!-- Material 3 Modern Design Theme -->
+  <link rel="stylesheet" href="css/material-theme.css">
+  <!-- Google Fonts: Google Sans & Roboto -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app-container">
+
+    <!-- ====================================================================
+         1. Material Design 3 Top App Bar
+         ==================================================================== -->
+    <header class="top-app-bar">
+      <!-- Brand & Title -->
+      <div class="brand-section">
+        <div class="brand-logo-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z"/>
+          </svg>
+        </div>
+        <div class="brand-title-wrap">
+          <h1>
+            MALAYSIA DC GEO 3D
+            <span class="brand-badge">Oct 2026 Intel</span>
+          </h1>
+          <p>Real 2D Geographic Map + 3D Isometric AI & Cloud Infrastructure</p>
+        </div>
+      </div>
+
+      <!-- KPI Live Metric Ticker -->
+      <div class="kpi-ticker">
+        <div class="kpi-pill">
+          <span class="dot" style="background: #a855f7;"></span>
+          <span class="kpi-label">Total Planned</span>
+          <span class="kpi-value"><span id="kpi-total-mw">0</span> MW</span>
+        </div>
+        <div class="kpi-pill">
+          <span class="dot" style="background: #10b981;"></span>
+          <span class="kpi-label">Live & Energized</span>
+          <span class="kpi-value"><span id="kpi-operational-mw">0</span> MW</span>
+        </div>
+        <div class="kpi-pill">
+          <span class="dot" style="background: #f59e0b;"></span>
+          <span class="kpi-label">In Construction</span>
+          <span class="kpi-value"><span id="kpi-pipeline-mw">0</span> MW</span>
+        </div>
+        <div class="kpi-pill">
+          <span class="dot" style="background: #38bdf8;"></span>
+          <span class="kpi-label">Facilities</span>
+          <span class="kpi-value" id="kpi-count">0</span>
+        </div>
+      </div>
+
+      <!-- Main View Mode Toggle: Map vs List View -->
+      <div class="main-view-toggle">
+        <button class="view-toggle-btn active" id="btn-view-map" data-view="map" title="Interactive Map with 3D Buildings">
+          <svg style="width: 15px; height: 15px; fill: currentColor;" viewBox="0 0 24 24">
+            <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+          </svg>
+          <span>Map View</span>
+        </button>
+        <button class="view-toggle-btn" id="btn-view-list" data-view="list" title="Full-Screen Data Table & Multiple Filters">
+          <svg style="width: 15px; height: 15px; fill: currentColor;" viewBox="0 0 24 24">
+            <path d="M4 14h4v-4H4v4zm0 5h4v-4H4v4zM4 9h4V5H4v4zm5 5h12v-4H9v4zm0 5h12v-4H9v4zM9 5v4h12V5H9z"/>
+          </svg>
+          <span>List View</span>
+        </button>
+      </div>
+
+      <!-- Day / Night View Mode Toggle -->
+      <div class="theme-mode-toggle" id="theme-mode-toggle" title="Switch Theme (Day / Night)">
+        <button class="theme-btn active" id="btn-theme-day" data-theme="light" title="Day View (Clean Material Light Theme)">
+          <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 24 24">
+            <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
+          </svg>
+          <span>Day</span>
+        </button>
+        <button class="theme-btn" id="btn-theme-night" data-theme="dark" title="Night View (Dark Theme)">
+          <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 24 24">
+            <path d="M12.3 2a10 10 0 0 0-.19 14 9.92 9.92 0 0 0 7.9 3.99c.33 0 .66-.02.99-.05A10 10 0 0 1 12.3 2z"/>
+          </svg>
+          <span>Night</span>
+        </button>
+      </div>
+
+      <!-- Cluster Presets Navigation -->
+      <div class="preset-navigation">
+        <button class="preset-btn active" data-preset="malaysia">
+          <span>🇲🇾 All Malaysia</span>
+        </button>
+        <button class="preset-btn" data-preset="johor">
+          <span>⚡ Johor Corridor</span>
+        </button>
+        <button class="preset-btn" data-preset="kl">
+          <span>🏙️ Greater KL / Cyberjaya</span>
+        </button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="top-bar-actions">
+        <!-- Hidden file input for CSV uploading -->
+        <input type="file" id="csv-file-input" accept=".csv,text/csv" style="display: none;">
+
+        <button class="icon-btn" id="btn-upload-csv" title="Upload CSV File (Bulk Update / Replace)">
+          <svg style="width: 20px; height: 20px; fill: currentColor;" viewBox="0 0 24 24">
+            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="btn-export-csv" title="Export Filtered Data (CSV)">
+          <svg style="width: 20px; height: 20px; fill: currentColor;" viewBox="0 0 24 24">
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="btn-reset-database" title="Reset Database to Default">
+          <svg style="width: 20px; height: 20px; fill: currentColor;" viewBox="0 0 24 24">
+            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ====================================================================
+         2. Main 2D Real Map Viewport & 3D Building Overlay
+         ==================================================================== -->
+    <main class="workspace-body">
+      <!-- Leaflet 2D Real Map Container -->
+      <div id="leaflet-map"></div>
+
+      <!-- Button to reopen side drawer if collapsed -->
+      <button class="map-fab drawer-open-btn" id="open-drawer-btn" style="display: none;" title="Open Data Center Drawer">
+        <svg style="width: 22px; height: 22px; fill: currentColor;" viewBox="0 0 24 24">
+          <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+        </svg>
+      </button>
+
+      <!-- ====================================================================
+           3. Material 3 Side Drawer (Filters, Inventory, Analytics)
+           ==================================================================== -->
+      <aside class="side-drawer" id="side-drawer">
+        <div class="drawer-header">
+          <div class="drawer-title-row">
+            <span class="drawer-title">Data Center Directory</span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button class="m3-btn m3-btn-tonal" id="btn-drawer-upload-csv" style="padding: 4px 10px; font-size: 11px;" title="Upload and replace dataset from CSV">
+                📁 Upload CSV
+              </button>
+              <button class="m3-btn m3-btn-primary" id="btn-open-add-dialog" style="padding: 4px 10px; font-size: 11px;" title="Add a new data center">
+                + Add Facility
+              </button>
+              <button class="close-drawer-btn" id="close-drawer-btn" title="Collapse Panel">
+                <svg style="width: 20px; height: 20px; fill: currentColor;" viewBox="0 0 24 24">
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- M3 Search Field -->
+          <div class="search-field">
+            <svg style="width: 18px; height: 18px; fill: var(--md-sys-color-on-surface-variant);" viewBox="0 0 24 24">
+              <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <input type="text" id="search-input" placeholder="Search (YTL, AirTrunk, Google, Vantage...)">
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="drawer-tabs">
+          <button class="drawer-tab active" data-tab="projects">Facilities</button>
+          <button class="drawer-tab" data-tab="analytics">Analytics</button>
+          <button class="drawer-tab" data-tab="milestones">Timeline</button>
+        </div>
+
+        <!-- Filter Controls Container -->
+        <div class="filter-chips-container">
+          <!-- 1. Company / Operator Filter -->
+          <div style="margin-bottom: 2px;">
+            <div class="filter-group-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span>🏢 Company / Operator</span>
+              <button id="btn-clear-filters" style="display: none; background: transparent; border: none; color: var(--md-sys-color-primary); font-size: 11px; font-weight: 600; cursor: pointer; text-decoration: underline;">Reset Filters</button>
+            </div>
+            <select id="filter-operator" class="form-select" style="width: 100%; padding: 7px 10px; font-size: 12px; border-radius: 8px;">
+              <option value="all">🏢 All Companies (All Facilities)</option>
+            </select>
+          </div>
+
+          <!-- 2. Colocation Purpose / Business Model Filter -->
+          <div style="margin-top: 6px;">
+            <div class="filter-group-label" style="margin-bottom: 4px;">Business Model / Purpose</div>
+            <div class="chips-row">
+              <button class="filter-chip active" data-group="colocation" data-val="all">All Models</button>
+              <button class="filter-chip" data-group="colocation" data-val="yes">🔑 Ready for Rent (Colo)</button>
+              <button class="filter-chip" data-group="colocation" data-val="no">🔒 Own Use (Private)</button>
+            </div>
+          </div>
+
+          <!-- 3. Operational Status Chips -->
+          <div style="margin-top: 6px;">
+            <div class="filter-group-label" style="margin-bottom: 4px;">Operational Status</div>
+            <div class="chips-row">
+              <button class="filter-chip active" data-group="status" data-val="all">All Status</button>
+              <button class="filter-chip" data-group="status" data-val="operational" style="border-color: rgba(16, 185, 129, 0.4);">🟢 Operational</button>
+              <button class="filter-chip" data-group="status" data-val="operational-expansion" style="border-color: rgba(6, 182, 212, 0.4);">🔵 Expanding</button>
+              <button class="filter-chip" data-group="status" data-val="under-construction" style="border-color: rgba(234, 179, 8, 0.4);">🟡 In Construction</button>
+              <button class="filter-chip" data-group="status" data-val="planned" style="border-color: rgba(168, 85, 247, 0.4);">🟣 Planned</button>
+            </div>
+          </div>
+
+          <!-- 4. Region / Cluster Chips -->
+          <div style="margin-top: 6px;">
+            <div class="filter-group-label" style="margin-bottom: 4px;">Region / Cluster</div>
+            <div class="chips-row">
+              <button class="filter-chip active" data-group="state" data-val="all">All Regions</button>
+              <button class="filter-chip" data-group="state" data-val="Johor">Johor</button>
+              <button class="filter-chip" data-group="state" data-val="Selangor">Selangor (Cyberjaya)</button>
+              <button class="filter-chip" data-group="state" data-val="Kuala Lumpur">Kuala Lumpur</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scrollable Cards Content -->
+        <div class="drawer-content" id="drawer-content">
+          <!-- Dynamic Content generated by app.js -->
+        </div>
+      </aside>
+
+      <!-- ====================================================================
+           4. Floating Map Controls (FABs)
+           ==================================================================== -->
+      <div class="floating-map-controls">
+        <!-- Basemap Layer Switcher FAB -->
+        <button class="map-fab" id="fab-layers-toggle" title="Switch Basemap Style (Street / Static / Satellite)">
+          <svg style="width: 22px; height: 22px; fill: currentColor;" viewBox="0 0 24 24">
+            <path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9.07l-9-7-9 7 1.63 1.2L12 16z"/>
+          </svg>
+          <span class="map-fab-tooltip">Basemap Layers</span>
+        </button>
+
+        <!-- Reset View FAB -->
+        <button class="map-fab" id="fab-reset-north" title="Reset View to Malaysia">
+          <svg style="width: 22px; height: 22px; fill: currentColor;" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+          </svg>
+          <span class="map-fab-tooltip">Overview</span>
+        </button>
+
+        <!-- Zoom In -->
+        <button class="map-fab" id="fab-zoom-in" title="Zoom In">
+          <svg style="width: 22px; height: 22px; fill: currentColor;" viewBox="0 0 24 24">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+          </svg>
+          <span class="map-fab-tooltip">Zoom In</span>
+        </button>
+
+        <!-- Zoom Out -->
+        <button class="map-fab" id="fab-zoom-out" title="Zoom Out">
+          <svg style="width: 22px; height: 22px; fill: currentColor;" viewBox="0 0 24 24">
+            <path d="M19 13H5v-2h14v2z"/>
+          </svg>
+          <span class="map-fab-tooltip">Zoom Out</span>
+        </button>
+      </div>
+
+      <!-- Floating Basemap Options Menu -->
+      <div class="basemap-picker-menu" id="basemap-picker-menu">
+        <button class="basemap-opt-btn active" data-layer="esriStreet">
+          <span>🗺️ Street Map (Free · Crisp · No Key)</span>
+        </button>
+        <button class="basemap-opt-btn" data-layer="static">
+          <span>📍 Static Vector Map (100% Offline)</span>
+        </button>
+        <button class="basemap-opt-btn" data-layer="osm">
+          <span>🌍 OpenStreetMap (Standard)</span>
+        </button>
+        <button class="basemap-opt-btn" data-layer="satellite">
+          <span>🛰️ Satellite Imagery (Real Earth)</span>
+        </button>
+      </div>
+
+
+
+      <!-- ====================================================================
+           5. Full-Screen Interactive Data Table / List View
+           ==================================================================== -->
+      <div class="list-view-container" id="list-view-container" style="display: none;">
+        <!-- Top Filter Toolbar -->
+        <div class="list-toolbar">
+          <div class="list-toolbar-row">
+            <!-- Search Field -->
+            <div class="search-field" style="max-width: 320px; flex: 1;">
+              <svg style="width: 18px; height: 18px; fill: var(--md-sys-color-on-surface-variant);" viewBox="0 0 24 24">
+                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+              </svg>
+              <input type="text" id="list-search-input" placeholder="Search name, operator, location, specs...">
+            </div>
+
+            <!-- Operator Filter -->
+            <select id="list-filter-operator" class="form-select" style="max-width: 220px; padding: 7px 12px; font-size: 12px; border-radius: 10px;">
+              <option value="all">🏢 All Companies</option>
+            </select>
+
+            <!-- State / Region Filter -->
+            <select id="list-filter-state" class="form-select" style="max-width: 180px; padding: 7px 12px; font-size: 12px; border-radius: 10px;">
+              <option value="all">📍 All Regions</option>
+              <option value="Johor">Johor</option>
+              <option value="Selangor">Selangor (Cyberjaya)</option>
+              <option value="Kuala Lumpur">Kuala Lumpur</option>
+            </select>
+
+            <!-- Capacity Tier Filter -->
+            <select id="list-filter-tier" class="form-select" style="max-width: 180px; padding: 7px 12px; font-size: 12px; border-radius: 10px;">
+              <option value="all">⚡ All Capacities</option>
+              <option value="gigawatt">⚡ 1,000+ MW (Gigawatt Parks)</option>
+              <option value="mega">⚡ 250 - 999 MW (Hyperscale)</option>
+              <option value="high">⚡ 100 - 249 MW</option>
+              <option value="mid">⚡ 40 - 99 MW</option>
+              <option value="standard">⚡ < 40 MW</option>
+            </select>
+
+            <!-- Quick Sort Dropdown -->
+            <select id="list-sort-select" class="form-select" style="max-width: 220px; padding: 7px 12px; font-size: 12px; border-radius: 10px;">
+              <option value="capacity-desc">Sort: Capacity (High → Low)</option>
+              <option value="capacity-asc">Sort: Capacity (Low → High)</option>
+              <option value="name-asc">Sort: Facility Name (A → Z)</option>
+              <option value="operator-asc">Sort: Operator (A → Z)</option>
+              <option value="status-asc">Sort: Operational Status</option>
+              <option value="year-asc">Sort: Target Year</option>
+            </select>
+
+            <!-- Reset Filters -->
+            <button class="m3-btn m3-btn-tonal" id="btn-list-reset-filters" style="padding: 7px 14px; font-size: 12px;" title="Reset all filters">
+              🔄 Reset Filters
+            </button>
+          </div>
+
+          <!-- Secondary Filter Chips Row: Business Model & Operational Status -->
+          <div class="list-chips-row">
+            <!-- Business Model Chips -->
+            <div class="list-chips-group">
+              <span class="list-group-label">Business Model:</span>
+              <button class="filter-chip active list-filter-chip" data-group="colocation" data-val="all">All</button>
+              <button class="filter-chip list-filter-chip" data-group="colocation" data-val="yes">🔑 Ready for Rent (Colo)</button>
+              <button class="filter-chip list-filter-chip" data-group="colocation" data-val="no">🔒 Own Use (Private)</button>
+            </div>
+
+            <div class="list-chips-divider"></div>
+
+            <!-- Operational Status Chips -->
+            <div class="list-chips-group">
+              <span class="list-group-label">Operational Status:</span>
+              <button class="filter-chip active list-filter-chip" data-group="status" data-val="all">All</button>
+              <button class="filter-chip list-filter-chip" data-group="status" data-val="operational" style="border-color: rgba(16, 185, 129, 0.4);">🟢 Operational</button>
+              <button class="filter-chip list-filter-chip" data-group="status" data-val="operational-expansion" style="border-color: rgba(6, 182, 212, 0.4);">🔵 Expanding</button>
+              <button class="filter-chip list-filter-chip" data-group="status" data-val="under-construction" style="border-color: rgba(234, 179, 8, 0.4);">🟡 In Construction</button>
+              <button class="filter-chip list-filter-chip" data-group="status" data-val="planned" style="border-color: rgba(168, 85, 247, 0.4);">🟣 Planned</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary & Stats Header Bar -->
+        <div class="list-summary-bar">
+          <div class="list-summary-left">
+            <span class="summary-count-badge" id="list-summary-count">Showing 48 facilities</span>
+            <span class="summary-stat-item" id="list-summary-capacity">⚡ Total: <strong>0 MW</strong></span>
+            <span class="summary-stat-item" id="list-summary-operational">🟢 Operational: <strong>0 MW</strong></span>
+            <span class="summary-stat-item" id="list-summary-pipeline">🟡 Pipeline: <strong>0 MW</strong></span>
+          </div>
+          <div class="list-summary-right">
+            <!-- In-Table Theme Switcher (Day / Night) -->
+            <div class="theme-mode-toggle list-theme-toggle" title="Switch Theme (Day / Night)">
+              <button class="theme-btn active" id="btn-list-theme-day" data-theme="light" title="Day View (Light Mode)">
+                <span>☀️ Day</span>
+              </button>
+              <button class="theme-btn" id="btn-list-theme-night" data-theme="dark" title="Night View (Dark Mode)">
+                <span>🌙 Night</span>
+              </button>
+            </div>
+            <button class="m3-btn m3-btn-tonal" id="btn-list-upload-csv" style="padding: 4px 10px; font-size: 11px;" title="Upload and replace dataset from CSV">
+              📁 Upload CSV
+            </button>
+            <button class="m3-btn m3-btn-tonal" id="btn-list-export-csv" style="padding: 4px 10px; font-size: 11px;" title="Export filtered data to CSV">
+              📥 Export CSV
+            </button>
+            <button class="m3-btn m3-btn-primary" id="btn-list-add-facility" style="padding: 4px 10px; font-size: 11px;" title="Add new data center facility">
+              + Add Facility
+            </button>
+          </div>
+        </div>
+
+        <!-- Table Viewport -->
+        <div class="list-table-scroll" id="list-table-scroll">
+          <div class="m3-table-card">
+            <table class="m3-data-table" id="data-centers-table">
+              <thead>
+                <tr>
+                  <th class="sortable-th" data-col="name">Facility & Operator <span class="sort-icon">↕</span></th>
+                  <th class="sortable-th" data-col="status">Operational Status <span class="sort-icon">↕</span></th>
+                  <th class="sortable-th" data-col="colocation">Business Model <span class="sort-icon">↕</span></th>
+                  <th class="sortable-th" data-col="capacity">Capacity (MW) <span class="sort-icon">↕</span></th>
+                  <th class="sortable-th" data-col="state">Cluster / Region <span class="sort-icon">↕</span></th>
+                  <th>Cooling & Power Specs</th>
+                  <th class="sortable-th" data-col="year">Target Year <span class="sort-icon">↕</span></th>
+                  <th style="text-align: right; width: 140px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="table-tbody">
+                <!-- Rendered dynamically by app.js -->
+              </tbody>
+            </table>
+          </div>
+          <div id="table-empty-state" style="display: none; text-align: center; padding: 60px 20px; color: var(--md-sys-color-on-surface-variant);">
+            <svg style="width: 48px; height: 48px; fill: currentColor; margin-bottom: 8px;" viewBox="0 0 24 24">
+              <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <p style="font-size: 15px; font-weight: 600; color: var(--md-sys-color-on-surface);">No matching data centers found</p>
+            <p style="font-size: 12px; margin-top: 4px;">Try adjusting search keywords or clearing active filters</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           6. Interactive Timeline Slider (Bottom Bar)
+           ==================================================================== -->
+      <div class="timeline-bar">
+        <button class="timeline-play-btn" id="timeline-play-btn" title="Play Growth Progression">
+          <svg style="width: 20px; height: 20px; fill: currentColor;" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </button>
+
+        <div class="timeline-slider-wrap">
+          <div class="timeline-labels">
+            <span>2023 (Inception)</span>
+            <span>2024 (Surge)</span>
+            <span>2025 (Expansion)</span>
+            <span>2026 (AI Delivery)</span>
+            <span>2027+ (Pipeline)</span>
+          </div>
+          <div class="timeline-slider-track">
+            <input type="range" class="timeline-range-input" id="timeline-slider" min="2023" max="2027" value="2027" step="1">
+          </div>
+        </div>
+
+        <div class="timeline-milestone-info">
+          <span style="font-weight: 700; color: var(--md-sys-color-primary);" id="timeline-current-year">2027+ Pipeline</span>
+          <span style="opacity: 0.3;">|</span>
+          <span id="timeline-milestone-text">2027+: STT Johor 1, Equinix JH2, and gigawatt-scale AI expansions coming online</span>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           7. Material 3 Detail Sheet Modal (Right / Floating)
+           ==================================================================== -->
+      <div class="detail-modal" id="detail-modal">
+        <div class="detail-modal-header">
+          <button class="detail-modal-close" id="close-detail-btn" title="Close Panel">
+            <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+          <div class="detail-headline" id="modal-dc-name">AirTrunk JHB1</div>
+          <div class="detail-subhead">
+            <span id="modal-dc-operator">AirTrunk • Johor</span>
+            <span>•</span>
+            <span id="modal-dc-status" style="font-weight: 700;">● Operational + Expanding</span>
+          </div>
+          <div style="font-size: 11px; color: var(--md-sys-color-on-surface-variant); margin-top: 4px;" id="modal-dc-address">📍 Address</div>
+        </div>
+
+        <div class="detail-modal-body">
+          <!-- Capacity Gauge Banner -->
+          <div class="capacity-stat-banner">
+            <div class="stat-item">
+              <span class="stat-label">Total Planned</span>
+              <span class="stat-num" id="modal-dc-total-mw">150 MW</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Live Operational</span>
+              <span class="stat-num" style="color: #10b981;" id="modal-dc-op-mw">50 MW</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">In Construction</span>
+              <span class="stat-num" style="color: #f59e0b;" id="modal-dc-pipe-mw">100 MW</span>
+            </div>
+          </div>
+
+          <!-- Technical Specs Grid -->
+          <div class="spec-grid">
+            <div class="spec-cell">
+              <span class="spec-title">⚡ Power Grid & Voltage</span>
+              <span class="spec-val" id="modal-dc-power">TNB 132kV dual HV feeds</span>
+            </div>
+            <div class="spec-cell">
+              <span class="spec-title">❄️ Cooling Architecture</span>
+              <span class="spec-val" id="modal-dc-cooling">Direct-to-chip liquid cooling</span>
+            </div>
+            <div class="spec-cell">
+              <span class="spec-title">🛡️ Uptime Tier Standard</span>
+              <span class="spec-val" id="modal-dc-tier">Hyperscale Tier III+ Design</span>
+            </div>
+            <div class="spec-cell">
+              <span class="spec-title">🌱 Design PUE & Clean Energy</span>
+              <span class="spec-val" id="modal-dc-pue">PUE 1.15 | 30MW VPPA</span>
+            </div>
+            <div class="spec-cell full-width">
+              <span class="spec-title">🌐 Interconnection & Latency</span>
+              <span class="spec-val" id="modal-dc-connect">Carrier-neutral; low latency to Singapore</span>
+            </div>
+            <div class="spec-cell full-width">
+              <span class="spec-title">🏗️ Land & Park Developer</span>
+              <span class="spec-val" id="modal-dc-land">Johor Bahru Core Industrial Zone</span>
+            </div>
+            <div class="spec-cell full-width">
+              <span class="spec-title">🤝 Key Anchor Clients</span>
+              <span class="spec-val" id="modal-dc-clients">Global Cloud Hyperscaler</span>
+            </div>
+            <div class="spec-cell full-width">
+              <span class="spec-title">📅 Commissioning Milestone</span>
+              <span class="spec-val" id="modal-dc-timeline">Opened July 30, 2024</span>
+            </div>
+          </div>
+
+          <!-- Research Insights Notes -->
+          <div class="notes-box">
+            <div class="notes-box-title">
+              <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+              Research Notes & Verification Background
+            </div>
+            <div class="notes-box-content" id="modal-dc-notes">
+              AirTrunk officially confirmed launch date, 150MW campus capacity, and phase 1 scale; subsequent phases under rollout.
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-modal-footer">
+          <button class="m3-btn m3-btn-tonal" id="btn-modal-edit-status">
+            ✏️ Edit Status
+          </button>
+          <button class="m3-btn m3-btn-tonal" id="btn-modal-copy">
+            Copy Info
+          </button>
+          <button class="m3-btn m3-btn-primary" id="btn-modal-fly">
+            Focus on Map
+          </button>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           8. Edit Facility Status Modal Dialog
+           ==================================================================== -->
+      <div class="m3-dialog-backdrop" id="edit-status-dialog">
+        <div class="m3-dialog">
+          <div class="m3-dialog-header">
+            <div class="m3-dialog-title">
+              <span>✏️ Change Facility Status</span>
+            </div>
+          </div>
+          <form id="form-edit-status">
+            <div class="m3-dialog-body">
+              <div class="form-group">
+                <label class="form-label">Facility Name</label>
+                <input type="text" name="edit_name" class="form-input" readonly style="opacity: 0.8;">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Operational Status</label>
+                  <select name="edit_status" class="form-select">
+                    <option value="operational">🟢 Operational (Live)</option>
+                    <option value="operational-expansion">🔵 Operational + Expanding</option>
+                    <option value="under-construction">🟡 Under Construction</option>
+                    <option value="planned">🟣 Planned / Concept</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Colocation (Ready for Rent?)</label>
+                  <select name="edit_colocation" class="form-select">
+                    <option value="Yes">🔑 Yes — Ready for Rent (Colo)</option>
+                    <option value="No">🔒 No — Own Use (Private Hyperscale)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Total Capacity (MW)</label>
+                  <input type="number" name="edit_capacity" class="form-input" min="1" step="1">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Live Energized (MW)</label>
+                  <input type="number" name="edit_operational" class="form-input" min="0" step="1">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Commissioning Timeline Note</label>
+                <input type="text" name="edit_timeline" class="form-input" placeholder="e.g. Energized Phase 1 in Q3 2026">
+              </div>
+            </div>
+            <div class="m3-dialog-footer">
+              <button type="button" class="m3-btn m3-btn-tonal" id="btn-cancel-edit">Cancel</button>
+              <button type="submit" class="m3-btn m3-btn-primary">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           9. Add New Data Center Modal Dialog
+           ==================================================================== -->
+      <div class="m3-dialog-backdrop" id="add-dc-dialog">
+        <div class="m3-dialog">
+          <div class="m3-dialog-header">
+            <div class="m3-dialog-title">
+              <span>➕ Add New Data Center</span>
+            </div>
+          </div>
+          <form id="form-add-dc">
+            <div class="m3-dialog-body">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Facility Name</label>
+                  <input type="text" name="dc_name" class="form-input" placeholder="e.g. Equinix JH3" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Operator Name</label>
+                  <input type="text" name="dc_operator" class="form-input" placeholder="e.g. Equinix" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">State / Region</label>
+                  <select name="dc_state" class="form-select">
+                    <option value="Johor">Johor</option>
+                    <option value="Selangor">Selangor</option>
+                    <option value="Kuala Lumpur">Kuala Lumpur</option>
+                    <option value="Penang">Penang</option>
+                    <option value="Kedah">Kedah</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Cluster / District</label>
+                  <input type="text" name="dc_cluster" class="form-input" placeholder="e.g. Iskandar Puteri">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Total Capacity (MW)</label>
+                  <input type="number" name="dc_capacity" class="form-input" placeholder="e.g. 100" min="1" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Live Operational (MW)</label>
+                  <input type="number" name="dc_operational" class="form-input" placeholder="0" min="0" value="0">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Current Status</label>
+                  <select name="dc_status" class="form-select">
+                    <option value="under-construction">🟡 Under Construction</option>
+                    <option value="operational">🟢 Fully Operational</option>
+                    <option value="operational-expansion">🔵 Operational + Expanding</option>
+                    <option value="planned">🟣 Planned / Concept</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Colocation Purpose (Ready for Rent?)</label>
+                  <select name="dc_colocation" class="form-select">
+                    <option value="Yes">🔑 Yes — Ready for Rent (Colo)</option>
+                    <option value="No">🔒 No — Own Use (Private Hyperscale)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Latitude</label>
+                  <input type="number" name="dc_lat" class="form-input" step="0.0001" placeholder="1.458" value="1.458">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Longitude</label>
+                  <input type="number" name="dc_lng" class="form-input" step="0.0001" placeholder="103.590" value="103.590">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Power Grid</label>
+                  <input type="text" name="dc_power" class="form-input" placeholder="e.g. TNB 275kV Substation">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Cooling Architecture</label>
+                  <input type="text" name="dc_cooling" class="form-input" placeholder="e.g. Direct Liquid Cooling">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Tier Standard</label>
+                <input type="text" name="dc_tier" class="form-input" placeholder="e.g. Uptime Tier III / Tier IV">
+              </div>
+            </div>
+            <div class="m3-dialog-footer">
+              <button type="button" class="m3-btn m3-btn-tonal" id="btn-cancel-add">Cancel</button>
+              <button type="submit" class="m3-btn m3-btn-primary">Add Data Center</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           10. CSV Import Preview & Confirmation Dialog
+           ==================================================================== -->
+      <div class="m3-dialog-backdrop" id="import-csv-dialog">
+        <div class="m3-dialog">
+          <div class="m3-dialog-header">
+            <div class="m3-dialog-title">
+              <span>📁 Bulk Import Data Centers from CSV</span>
+            </div>
+          </div>
+          <div class="m3-dialog-body">
+            <div id="import-preview-summary" style="background: var(--md-sys-color-surface-container); border: 1px solid var(--md-sys-color-outline); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+              <!-- Dynamic summary injected by app.js -->
+            </div>
+            
+            <div class="form-group" style="margin-top: 8px;">
+              <label class="form-label">Import Mode</label>
+              <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; cursor: pointer; background: var(--md-sys-color-surface-container); padding: 10px 12px; border-radius: 10px; border: 1px solid var(--md-sys-color-outline-variant);">
+                  <input type="radio" name="import_mode" value="replace" checked style="margin-top: 2px;">
+                  <div>
+                    <strong style="color: #ffffff;">Replace All Facilities (Recommended)</strong>
+                    <div style="font-size: 11px; color: var(--md-sys-color-on-surface-variant); margin-top: 2px;">Completely overwrites the current database with the rows from this CSV.</div>
+                  </div>
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; cursor: pointer; background: var(--md-sys-color-surface-container); padding: 10px 12px; border-radius: 10px; border: 1px solid var(--md-sys-color-outline-variant);">
+                  <input type="radio" name="import_mode" value="merge" style="margin-top: 2px;">
+                  <div>
+                    <strong style="color: #ffffff;">Merge & Update Existing</strong>
+                    <div style="font-size: 11px; color: var(--md-sys-color-on-surface-variant); margin-top: 2px;">Updates existing facilities by ID/Name and appends any newly added ones.</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="m3-dialog-footer">
+            <button type="button" class="m3-btn m3-btn-tonal" id="btn-cancel-import">Cancel</button>
+            <button type="button" class="m3-btn m3-btn-primary" id="btn-confirm-import">Apply & Refresh Map</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Load Scripts: Leaflet -> Data -> Static GeoJSON -> 3D Building Icons -> Map Controller -> App -->
+  <script src="js/leaflet.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/static-malaysia-geojson.js"></script>
+  <script src="js/building-icons.js"></script>
+  <script src="js/map-leaflet.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
