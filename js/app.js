@@ -58,12 +58,27 @@ class DataCenterApp {
           const op = (dc.operator || "").toLowerCase();
           dc.isColocation = !(op.includes("google") || op.includes("aws") || op.includes("amazon") || op.includes("microsoft") || op.includes("azure"));
         }
-      }
       if (!dc.colocation) {
         dc.colocation = dc.isColocation ? "Yes" : "No";
       }
       if (!dc.colocationLabel) {
         dc.colocationLabel = dc.isColocation ? "Ready for Rent (Colocation)" : "Own Use (Private Hyperscale)";
+      }
+
+      // Normalize operational and expansion statuses
+      if (dc.status !== "planned") {
+        const opMw = dc.operationalMW || 0;
+        const pipeMw = dc.pipelineMW || 0;
+        if (opMw > 0 && pipeMw > 0) {
+          dc.status = "operational-expansion";
+          dc.statusLabel = "Operational + Expanding";
+        } else if (opMw > 0 && pipeMw <= 0) {
+          dc.status = "operational";
+          dc.statusLabel = "Fully Operational";
+        } else if (opMw <= 0 && dc.status !== "planned") {
+          dc.status = "under-construction";
+          dc.statusLabel = "Under Construction";
+        }
       }
     });
 
@@ -1756,8 +1771,9 @@ class DataCenterApp {
     const legendItemsEl = document.getElementById("legend-items-list");
     if (!legendItemsEl) return;
 
-    // Calculate real-time counts for operational, in-construction, planned, and business models
+    // Calculate real-time counts for operational, expansion, in-construction, planned, and business models
     let operationalCount = 0;
+    let expansionCount = 0;
     let underConstructionCount = 0;
     let plannedCount = 0;
     let ownUseCount = 0;
@@ -1771,8 +1787,10 @@ class DataCenterApp {
         colocationCount++;
       }
 
-      if (dc.status === "operational" || dc.status === "operational-expansion") {
+      if (dc.status === "operational") {
         operationalCount++;
+      } else if (dc.status === "operational-expansion") {
+        expansionCount++;
       } else if (dc.status === "under-construction") {
         underConstructionCount++;
       } else if (dc.status === "planned") {
@@ -1780,7 +1798,8 @@ class DataCenterApp {
       }
     });
 
-    const isOpActive = (this.filters.status === "operational" || this.filters.status === "operational-expansion") ? "active" : "";
+    const isOpActive = this.filters.status === "operational" ? "active" : "";
+    const isExpActive = this.filters.status === "operational-expansion" ? "active" : "";
     const isConActive = this.filters.status === "under-construction" ? "active" : "";
     const isPlanActive = this.filters.status === "planned" ? "active" : "";
     const isColoActive = this.filters.colocation === "yes" ? "active" : "";
@@ -1789,29 +1808,38 @@ class DataCenterApp {
     let html = `
       <div class="legend-section-title">Status Colors</div>
       
-      <!-- Green: Operational -->
-      <div class="legend-row ${isOpActive}" data-status="operational" title="Filter Operational facilities (Green)">
+      <!-- 1. Green: Fully Operational -->
+      <div class="legend-row ${isOpActive}" data-status="operational" title="Filter Fully Operational facilities (Green)">
         <div class="legend-row-left">
           <div class="legend-swatch" style="background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.75);"></div>
-          <span class="legend-label"><strong>Operational</strong></span>
+          <span class="legend-label"><strong>Operational</strong> <span class="legend-sub-text">(Live)</span></span>
         </div>
         <span class="legend-count">${operationalCount}</span>
       </div>
 
-      <!-- Yellow / Orange: Purpose (In Construction) -->
-      <div class="legend-row ${isConActive}" data-status="under-construction" title="Filter In Construction / Purpose facilities (Yellow/Orange)">
+      <!-- 2. Cyan: Operational + Expanding -->
+      <div class="legend-row ${isExpActive}" data-status="operational-expansion" title="Filter Operational + Expanding facilities (Cyan)">
+        <div class="legend-row-left">
+          <div class="legend-swatch" style="background: #06b6d4; box-shadow: 0 0 8px rgba(6, 182, 212, 0.75);"></div>
+          <span class="legend-label"><strong>Operational + Expanding</strong></span>
+        </div>
+        <span class="legend-count">${expansionCount}</span>
+      </div>
+
+      <!-- 3. Amber / Orange: Under Construction (Not Live) -->
+      <div class="legend-row ${isConActive}" data-status="under-construction" title="Filter Ground-up Under Construction facilities (Orange)">
         <div class="legend-row-left">
           <div class="legend-swatch" style="background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.75);"></div>
-          <span class="legend-label"><strong>Purpose</strong> <span class="legend-sub-text">(In Construction)</span></span>
+          <span class="legend-label"><strong>Under Construction</strong> <span class="legend-sub-text">(Not Live)</span></span>
         </div>
         <span class="legend-count">${underConstructionCount}</span>
       </div>
 
-      <!-- Purple: Planned -->
-      <div class="legend-row ${isPlanActive}" data-status="planned" title="Filter Planned facilities (Purple)">
+      <!-- 4. Purple: Planned / Pipeline -->
+      <div class="legend-row ${isPlanActive}" data-status="planned" title="Filter Planned / Concept facilities (Purple)">
         <div class="legend-row-left">
           <div class="legend-swatch" style="background: #a855f7; box-shadow: 0 0 8px rgba(168, 85, 247, 0.75);"></div>
-          <span class="legend-label"><strong>Planned</strong></span>
+          <span class="legend-label"><strong>Planned</strong> <span class="legend-sub-text">(Concept)</span></span>
         </div>
         <span class="legend-count">${plannedCount}</span>
       </div>
@@ -1837,11 +1865,7 @@ class DataCenterApp {
     legendItemsEl.querySelectorAll(".legend-row").forEach(row => {
       row.addEventListener("click", () => {
         const statusKey = row.dataset.status;
-        if (statusKey === "operational") {
-          this.filters.status = (this.filters.status === "operational" || this.filters.status === "operational-expansion") ? "all" : "operational";
-        } else {
-          this.filters.status = this.filters.status === statusKey ? "all" : statusKey;
-        }
+        this.filters.status = this.filters.status === statusKey ? "all" : statusKey;
 
         document.querySelectorAll(`.filter-chip[data-group="status"]`).forEach(c => {
           c.classList.toggle("active", c.dataset.val === this.filters.status);

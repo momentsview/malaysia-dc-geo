@@ -1954,9 +1954,9 @@ const STATUS_CONFIG = {
   "under-construction": {
     label: "Under Construction",
     shortLabel: "In Construction",
-    color: "#eab308",       // High-Vis Construction Yellow
-    bg: "rgba(234, 179, 8, 0.15)",
-    border: "rgba(234, 179, 8, 0.4)"
+    color: "#f59e0b",       // High-Vis Construction Amber / Orange
+    bg: "rgba(245, 158, 11, 0.15)",
+    border: "rgba(245, 158, 11, 0.4)"
   },
   "planned": {
     label: "Planned / Concept",

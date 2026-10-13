@@ -941,7 +941,7 @@ body, html {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 232px;
+  width: 252px;
   max-width: calc(100vw - 32px);
   transition: all 0.25s var(--md-sys-motion-standard);
   user-select: none;
