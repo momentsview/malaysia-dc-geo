@@ -58,6 +58,7 @@ class DataCenterApp {
           const op = (dc.operator || "").toLowerCase();
           dc.isColocation = !(op.includes("google") || op.includes("aws") || op.includes("amazon") || op.includes("microsoft") || op.includes("azure"));
         }
+      }
       if (!dc.colocation) {
         dc.colocation = dc.isColocation ? "Yes" : "No";
       }
