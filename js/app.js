@@ -8,6 +8,26 @@
  * - Multi-criteria search, filters, timeline playback, and Leaflet map sync
  */
 
+/**
+ * Administrator Authentication Config & Secure SHA-256 Cryptographic Hash
+ * Username: "kayden"
+ * Password: "Google2026$$$"
+ */
+const ADMIN_AUTH_CONFIG = {
+  userHash: "771a3299824c27f5191278fead3ac107952eed1a1fed351e349367aa1761abe1", // "kayden"
+  passHash: "fecddcd56e4760f033fab0b72e10717045ff448db607fc4855c3a96839c4fd8d", // "Google2026$$$"
+  usernameDisplay: "kayden"
+};
+
+async function hashStringSHA256(str) {
+  if (!str) return "";
+  const enc = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 class DataCenterApp {
   constructor() {
     // Dataset version identifier to sync with updated data.js
@@ -92,6 +112,7 @@ class DataCenterApp {
 
     // Setup DOM and Event Listeners
     this.initDOM();
+    this.initAdminAuth();
     this.setTheme(this.theme, false);
     this.initEvents();
     this.populateOperatorFilter();
@@ -130,6 +151,124 @@ class DataCenterApp {
       toast.classList.remove("active");
     }, 3200);
   }
+
+  /* ==========================================================================
+     Admin Authentication System (Protects CSV Upload/Download & Data Edits)
+     ========================================================================== */
+  initAdminAuth() {
+    this.pendingAdminAction = null;
+    this.updateAdminUI();
+
+    // Form submission
+    if (this.formAdminAuth) {
+      this.formAdminAuth.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        await this.handleAdminLogin();
+      });
+    }
+
+    // Cancel / Close buttons
+    if (this.btnCloseAdminAuth) {
+      this.btnCloseAdminAuth.addEventListener("click", () => this.hideAdminAuthDialog());
+    }
+    if (this.btnCancelAdminAuth) {
+      this.btnCancelAdminAuth.addEventListener("click", () => this.hideAdminAuthDialog());
+    }
+
+    // Toggle password visibility
+    if (this.btnToggleAuthPassword && this.authPasswordInput) {
+      this.btnToggleAuthPassword.addEventListener("click", () => {
+        const isPass = this.authPasswordInput.type === "password";
+        this.authPasswordInput.type = isPass ? "text" : "password";
+      });
+    }
+
+    // Logout button
+    if (this.btnAdminLogout) {
+      this.btnAdminLogout.addEventListener("click", () => this.handleAdminLogout());
+    }
+  }
+
+  isAdminAuthenticated() {
+    return sessionStorage.getItem("MALAYSIA_DC_ADMIN_AUTH") === "1";
+  }
+
+  updateAdminUI() {
+    const isAuthed = this.isAdminAuthenticated();
+    if (this.adminSessionChip) {
+      this.adminSessionChip.style.display = isAuthed ? "inline-flex" : "none";
+    }
+  }
+
+  requireAdminAuth(actionCallback) {
+    if (this.isAdminAuthenticated()) {
+      if (typeof actionCallback === "function") actionCallback();
+      return;
+    }
+    this.pendingAdminAction = actionCallback;
+    this.showAdminAuthDialog();
+  }
+
+  showAdminAuthDialog() {
+    if (!this.adminAuthDialog) return;
+    if (this.authErrorMsg) this.authErrorMsg.style.display = "none";
+    if (this.authUsernameInput) this.authUsernameInput.value = "";
+    if (this.authPasswordInput) {
+      this.authPasswordInput.value = "";
+      this.authPasswordInput.type = "password";
+    }
+    this.adminAuthDialog.classList.add("active");
+    setTimeout(() => {
+      if (this.authUsernameInput) this.authUsernameInput.focus();
+    }, 120);
+  }
+
+  hideAdminAuthDialog() {
+    if (!this.adminAuthDialog) return;
+    this.adminAuthDialog.classList.remove("active");
+    if (this.authErrorMsg) this.authErrorMsg.style.display = "none";
+    if (this.authPasswordInput) this.authPasswordInput.value = "";
+    this.pendingAdminAction = null;
+  }
+
+  async handleAdminLogin() {
+    const username = (this.authUsernameInput ? this.authUsernameInput.value : "").trim().toLowerCase();
+    const password = this.authPasswordInput ? this.authPasswordInput.value : "";
+
+    const uHash = await hashStringSHA256(username);
+    const pHash = await hashStringSHA256(password);
+
+    if (uHash === ADMIN_AUTH_CONFIG.userHash && pHash === ADMIN_AUTH_CONFIG.passHash) {
+      // Authentication success!
+      sessionStorage.setItem("MALAYSIA_DC_ADMIN_AUTH", "1");
+      this.updateAdminUI();
+      if (this.adminAuthDialog) this.adminAuthDialog.classList.remove("active");
+      this.showToast(`Admin authenticated as ${ADMIN_AUTH_CONFIG.usernameDisplay}. Access unlocked!`);
+
+      const nextAction = this.pendingAdminAction;
+      this.pendingAdminAction = null;
+      if (typeof nextAction === "function") {
+        setTimeout(() => nextAction(), 150);
+      }
+    } else {
+      // Authentication failed
+      if (this.authErrorMsg) {
+        this.authErrorMsg.style.display = "block";
+        this.authErrorMsg.innerText = "Invalid username or password. Please try again.";
+      }
+      if (this.authPasswordInput) {
+        this.authPasswordInput.value = "";
+        this.authPasswordInput.focus();
+      }
+    }
+  }
+
+  handleAdminLogout() {
+    sessionStorage.removeItem("MALAYSIA_DC_ADMIN_AUTH");
+    this.updateAdminUI();
+    this.showToast("Logged out of Admin session.");
+  }
+
 
   initDOM() {
     this.sideDrawer = document.getElementById("side-drawer");
@@ -188,6 +327,18 @@ class DataCenterApp {
     this.csvFileInput = document.getElementById("csv-file-input");
     this.btnConfirmImport = document.getElementById("btn-confirm-import");
     this.btnCancelImport = document.getElementById("btn-cancel-import");
+
+    // Admin Authentication Elements
+    this.adminSessionChip = document.getElementById("admin-session-chip");
+    this.btnAdminLogout = document.getElementById("btn-admin-logout");
+    this.adminAuthDialog = document.getElementById("admin-auth-dialog");
+    this.formAdminAuth = document.getElementById("form-admin-auth");
+    this.authUsernameInput = document.getElementById("auth-username");
+    this.authPasswordInput = document.getElementById("auth-password");
+    this.btnToggleAuthPassword = document.getElementById("btn-toggle-auth-password");
+    this.btnCloseAdminAuth = document.getElementById("btn-close-admin-auth");
+    this.btnCancelAdminAuth = document.getElementById("btn-cancel-admin-auth");
+    this.authErrorMsg = document.getElementById("auth-error-msg");
   }
 
   initEvents() {
@@ -318,20 +469,26 @@ class DataCenterApp {
       });
     }
 
-    // 3b. List View Toolbar Actions (Upload, Export, Add)
+    // 3b. List View Toolbar Actions (Upload, Export, Add) - Protected by Admin Auth
     if (this.btnListUploadCsv) {
       this.btnListUploadCsv.addEventListener("click", () => {
-        if (this.csvFileInput) this.csvFileInput.click();
+        this.requireAdminAuth(() => {
+          if (this.csvFileInput) this.csvFileInput.click();
+        });
       });
     }
     if (this.btnListExportCsv) {
       this.btnListExportCsv.addEventListener("click", () => {
-        this.exportCSV();
+        this.requireAdminAuth(() => {
+          this.exportCSV();
+        });
       });
     }
     if (this.btnListAddFacility) {
       this.btnListAddFacility.addEventListener("click", () => {
-        this.showAddFacilityDialog();
+        this.requireAdminAuth(() => {
+          this.showAddFacilityDialog();
+        });
       });
     }
 
@@ -479,20 +636,24 @@ class DataCenterApp {
       });
     }
 
-    // 10. Export Data Button
+    // 10. Export Data Button (Requires Admin)
     const exportBtn = document.getElementById("btn-export-csv");
     if (exportBtn) {
-      exportBtn.addEventListener("click", () => this.exportCSV());
+      exportBtn.addEventListener("click", () => {
+        this.requireAdminAuth(() => this.exportCSV());
+      });
     }
 
-    // 11. Add New Data Center Dialog Triggers
+    // 11. Add New Data Center Dialog Triggers (Requires Admin)
     const btnOpenAdd = document.getElementById("btn-open-add-dialog");
     const btnCancelAdd = document.getElementById("btn-cancel-add");
     const formAdd = document.getElementById("form-add-dc");
 
     if (btnOpenAdd && this.addDialogBackdrop) {
       btnOpenAdd.addEventListener("click", () => {
-        this.addDialogBackdrop.classList.add("active");
+        this.requireAdminAuth(() => {
+          this.addDialogBackdrop.classList.add("active");
+        });
       });
     }
 
@@ -509,7 +670,7 @@ class DataCenterApp {
       });
     }
 
-    // 12. Edit Facility Status Dialog Triggers
+    // 12. Edit Facility Status Dialog Triggers (Requires Admin)
     const btnOpenEdit = document.getElementById("btn-modal-edit-status");
     const btnCancelEdit = document.getElementById("btn-cancel-edit");
     const formEdit = document.getElementById("form-edit-status");
@@ -517,8 +678,10 @@ class DataCenterApp {
     if (btnOpenEdit && this.editDialogBackdrop) {
       btnOpenEdit.addEventListener("click", () => {
         if (!this.selectedDC) return;
-        this.populateEditForm(this.selectedDC);
-        this.editDialogBackdrop.classList.add("active");
+        this.requireAdminAuth(() => {
+          this.populateEditForm(this.selectedDC);
+          this.editDialogBackdrop.classList.add("active");
+        });
       });
     }
 
@@ -535,32 +698,38 @@ class DataCenterApp {
       });
     }
 
-    // 13. Reset Database to Default button
+    // 13. Reset Database to Default button (Requires Admin)
     const btnResetData = document.getElementById("btn-reset-database");
     if (btnResetData) {
       btnResetData.addEventListener("click", () => {
-        if (confirm("Reset all data center modifications back to default?")) {
-          localStorage.removeItem("MALAYSIA_DC_LOCAL_DATA");
-          this.allData = [...MALAYSIA_DC_DATA];
-          this.map.setData(this.allData);
-          this.applyFilters();
-        }
+        this.requireAdminAuth(() => {
+          if (confirm("Reset all data center modifications back to default?")) {
+            localStorage.removeItem("MALAYSIA_DC_LOCAL_DATA");
+            this.allData = [...MALAYSIA_DC_DATA];
+            this.map.setData(this.allData);
+            this.applyFilters();
+          }
+        });
       });
     }
 
-    // 14. CSV File Upload and Bulk Import Triggers
+    // 14. CSV File Upload and Bulk Import Triggers (Requires Admin)
     const btnUploadCSV = document.getElementById("btn-upload-csv");
     const btnDrawerUploadCSV = document.getElementById("btn-drawer-upload-csv");
 
     if (btnUploadCSV && this.csvFileInput) {
       btnUploadCSV.addEventListener("click", () => {
-        this.csvFileInput.click();
+        this.requireAdminAuth(() => {
+          this.csvFileInput.click();
+        });
       });
     }
 
     if (btnDrawerUploadCSV && this.csvFileInput) {
       btnDrawerUploadCSV.addEventListener("click", () => {
-        this.csvFileInput.click();
+        this.requireAdminAuth(() => {
+          this.csvFileInput.click();
+        });
       });
     }
 
@@ -585,6 +754,10 @@ class DataCenterApp {
   }
 
   handleAddNewDC(form) {
+    if (!this.isAdminAuthenticated()) {
+      this.requireAdminAuth(() => this.handleAddNewDC(form));
+      return;
+    }
     const name = form.dc_name.value.trim();
     const operator = form.dc_operator.value.trim();
     const state = form.dc_state.value;
@@ -670,6 +843,10 @@ class DataCenterApp {
   }
 
   handleSaveEditStatus(form) {
+    if (!this.isAdminAuthenticated()) {
+      this.requireAdminAuth(() => this.handleSaveEditStatus(form));
+      return;
+    }
     if (!this.selectedDC) return;
 
     const newStatus = form.edit_status.value;
@@ -1654,6 +1831,11 @@ class DataCenterApp {
   }
 
   exportCSV() {
+    if (!this.isAdminAuthenticated()) {
+      this.requireAdminAuth(() => this.exportCSV());
+      return;
+    }
+
     const headers = [
       "ID", "Facility Name", "Operator", "State", "Cluster", "Address", "Is Colocation", "Status", "Milestone Timeline", "Total Capacity (MW)",
       "Operational (MW)", "Pipeline (MW)", "Power Grid", "Cooling", "Tier", "Longitude", "Latitude"
@@ -1750,6 +1932,10 @@ class DataCenterApp {
   }
 
   applyCSVImport() {
+    if (!this.isAdminAuthenticated()) {
+      this.requireAdminAuth(() => this.applyCSVImport());
+      return;
+    }
     if (!this.pendingImportData || this.pendingImportData.length === 0) return;
 
     const modeInput = document.querySelector('input[name="import_mode"]:checked');

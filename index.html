@@ -107,20 +107,27 @@
 
       <!-- Action Buttons -->
       <div class="top-bar-actions">
+        <!-- Admin Session Chip -->
+        <div class="admin-session-chip" id="admin-session-chip" style="display: none;">
+          <span class="admin-status-dot"></span>
+          <span class="admin-user-text">Admin: kayden</span>
+          <button type="button" class="admin-logout-btn" id="btn-admin-logout" title="Log Out of Admin Session">Log Out</button>
+        </div>
+
         <!-- Hidden file input for CSV uploading -->
         <input type="file" id="csv-file-input" accept=".csv,text/csv" style="display: none;">
 
-        <button class="icon-btn" id="btn-upload-csv" title="Upload CSV File (Bulk Update / Replace)">
+        <button class="icon-btn" id="btn-upload-csv" title="Upload CSV File (Requires Admin: kayden)">
           <svg style="width: 20px; height: 20px; fill: currentColor;" viewBox="0 0 24 24">
             <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
           </svg>
         </button>
-        <button class="icon-btn" id="btn-export-csv" title="Export Filtered Data (CSV)">
+        <button class="icon-btn" id="btn-export-csv" title="Export Filtered Data (CSV - Requires Admin: kayden)">
           <svg style="width: 20px; height: 20px; fill: currentColor;" viewBox="0 0 24 24">
             <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
           </svg>
         </button>
-        <button class="icon-btn" id="btn-reset-database" title="Reset Database to Default">
+        <button class="icon-btn" id="btn-reset-database" title="Reset Database to Default (Requires Admin: kayden)">
           <svg style="width: 20px; height: 20px; fill: currentColor;" viewBox="0 0 24 24">
             <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
           </svg>
@@ -755,6 +762,57 @@
             <button type="button" class="m3-btn m3-btn-tonal" id="btn-cancel-import">Cancel</button>
             <button type="button" class="m3-btn m3-btn-primary" id="btn-confirm-import">Apply & Refresh Map</button>
           </div>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           11. Admin Authentication Dialog (Protect Download & Upload)
+           ==================================================================== -->
+      <div class="m3-dialog-backdrop" id="admin-auth-dialog">
+        <div class="m3-dialog" style="max-width: 440px;">
+          <div class="m3-dialog-header">
+            <div class="m3-dialog-title">
+              <svg style="width: 20px; height: 20px; fill: #a855f7;" viewBox="0 0 24 24">
+                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+              </svg>
+              <span>Admin Authentication Required</span>
+            </div>
+            <button type="button" class="icon-btn" id="btn-close-admin-auth" style="width: 32px; height: 32px;" title="Close">
+              <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+          </div>
+          <form id="form-admin-auth">
+            <div class="m3-dialog-body" style="padding: 20px 22px 14px;">
+              <p style="font-size: 13px; color: var(--md-sys-color-on-surface-variant); line-height: 1.5; margin: 0 0 10px;">
+                Please enter your administrator credentials to authorize data export (CSV download), bulk upload, or database modifications.
+              </p>
+              
+              <div class="form-group">
+                <label class="form-label" for="auth-username">Username</label>
+                <input type="text" id="auth-username" class="form-input" placeholder="e.g. kayden" autocomplete="username" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="auth-password">Password</label>
+                <div style="position: relative;">
+                  <input type="password" id="auth-password" class="form-input" placeholder="••••••••••••" autocomplete="current-password" required style="padding-right: 42px;">
+                  <button type="button" id="btn-toggle-auth-password" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--md-sys-color-on-surface-variant); display: flex; align-items: center; padding: 4px;" title="Show/Hide password">
+                    <svg id="eye-icon" style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24">
+                      <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div id="auth-error-msg" style="display: none; color: #ef4444; font-size: 12.5px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); padding: 9px 12px; border-radius: 8px; font-weight: 500;">
+                Invalid username or password. Please try again.
+              </div>
+            </div>
+            <div class="m3-dialog-footer">
+              <button type="button" class="m3-btn m3-btn-tonal" id="btn-cancel-admin-auth">Cancel</button>
+              <button type="submit" class="m3-btn m3-btn-primary" id="btn-submit-admin-auth">Unlock Access</button>
+            </div>
+          </form>
         </div>
       </div>
 
