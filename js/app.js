@@ -1859,6 +1859,7 @@ class DataCenterApp {
   }
 
   toggleTimelinePlay() {
+    if (!this.playTimelineBtn) return;
     this.isPlayingTimeline = !this.isPlayingTimeline;
 
     if (this.isPlayingTimeline) {
