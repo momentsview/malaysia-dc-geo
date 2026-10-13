@@ -1261,39 +1261,429 @@ body, html {
 }
 
 /* ==========================================================================
-   9. Responsive Adaptations
+   9. Comprehensive Mobile & Responsive Adaptations
    ========================================================================== */
-@media (max-width: 900px) {
+
+/* --- Tablet / Medium Screens (<= 992px) --- */
+@media (max-width: 992px) {
   .kpi-ticker {
     display: none;
   }
   .side-drawer {
-    width: 320px;
+    width: 340px;
+    bottom: 84px;
   }
   .detail-modal {
-    width: 360px;
+    width: 380px;
+    bottom: 84px;
   }
   .list-toolbar {
-    padding: 10px 14px;
+    padding: 10px 16px;
   }
   .list-summary-bar {
-    padding: 8px 14px;
+    padding: 8px 16px;
   }
 }
 
-@media (max-width: 600px) {
+/* --- Mobile Landscape & Portrait (<= 768px) --- */
+@media (max-width: 768px) {
+  /* 1. App Container & Viewport */
+  body, #app-container {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* 2. Top App Bar */
+  .top-app-bar {
+    height: auto;
+    min-height: 52px;
+    padding: 6px 12px;
+    gap: 8px;
+    padding-top: max(6px, env(safe-area-inset-top));
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+
+  .brand-logo-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 9px;
+  }
+
+  .brand-logo-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .brand-title-wrap h1 {
+    font-size: 13.5px;
+    letter-spacing: -0.2px;
+    gap: 6px;
+  }
+
+  .brand-title-wrap p {
+    display: none; /* Hide lengthy subtitle on mobile for sleek header */
+  }
+
+  .brand-badge {
+    font-size: 9px;
+    padding: 1px 6px;
+  }
+
+  /* Preset navigation: hidden on mobile, drawer has filters */
   .preset-navigation {
     display: none;
   }
-  .timeline-bar {
-    width: 95%;
-    padding: 8px 12px;
-  }
+
+  /* View mode & theme toggles */
   .main-view-toggle .view-toggle-btn span {
     display: none;
   }
   .main-view-toggle .view-toggle-btn {
+    padding: 6px 8px;
+    min-width: 34px;
+  }
+
+  .theme-mode-toggle .theme-btn span {
+    display: none;
+  }
+  .theme-mode-toggle .theme-btn {
+    padding: 6px 8px;
+    min-width: 34px;
+  }
+
+  .top-bar-actions {
+    gap: 4px;
+  }
+
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+  }
+
+  .admin-session-chip {
+    padding: 2px 6px;
+    font-size: 10.5px;
+    gap: 4px;
+  }
+
+  .admin-logout-btn {
+    font-size: 9.5px;
+    padding: 1px 5px;
+  }
+
+  /* 3. Floating Map Controls & Timeline */
+  .drawer-open-btn {
+    top: 64px;
+    left: 12px;
+    width: 42px;
+    height: 42px;
+    z-index: 990;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  .floating-map-controls {
+    top: 64px;
+    right: 12px;
+    gap: 6px;
+    z-index: 990;
+  }
+
+  .map-fab {
+    width: 38px;
+    height: 38px;
+  }
+
+  .timeline-bar {
+    position: fixed;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 20px);
+    max-width: 420px;
+    padding: 6px 12px;
+    border-radius: 16px;
+    z-index: 900;
+  }
+
+  .timeline-milestones-row {
+    margin-top: 4px;
+  }
+
+  .timeline-milestone-text {
+    font-size: 10.5px;
+    line-height: 1.25;
+    max-height: 30px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 4. Full-Screen Drawer on Mobile */
+  .side-drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    border-radius: 0;
+    border: none;
+    z-index: 2000;
+    transform: translateX(0);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .side-drawer.collapsed {
+    transform: translateX(-100%);
+  }
+
+  .drawer-header {
+    padding: 14px 16px 10px;
+  }
+
+  .close-drawer-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* 5. Detail Modal transformed into Bottom Sheet */
+  .detail-modal {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100vw;
+    max-height: 84vh;
+    max-height: 84dvh;
+    border-radius: 22px 22px 0 0;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    transform: translateY(105%);
+    transition: transform 0.32s cubic-bezier(0.2, 0, 0, 1);
+    z-index: 2100;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.65);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .detail-modal.active {
+    transform: translateY(0);
+  }
+
+  .detail-modal-header {
+    padding: 14px 18px 12px;
+  }
+
+  .detail-modal-header::before {
+    content: "";
+    display: block;
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.3);
+    margin: 0 auto 10px;
+  }
+
+  [data-theme="light"] .detail-modal-header::before {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .detail-modal-body {
+    padding: 14px 18px calc(24px + env(safe-area-inset-bottom));
+  }
+
+  /* 6. List View Mobile Layout */
+  .list-view-container {
+    height: calc(100vh - 52px);
+    height: calc(100dvh - 52px);
+  }
+
+  .list-toolbar {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .list-toolbar-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .list-search-box {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .list-search-input {
+    font-size: 14px;
+    height: 40px;
+  }
+
+  .list-filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .list-select {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 120px;
+    height: 38px;
+    font-size: 13px;
+  }
+
+  .list-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+
+  .list-chips-row {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding: 6px 0;
+    gap: 8px;
+  }
+
+  .list-chips-group {
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+  }
+
+  .list-chips-divider {
+    display: none;
+  }
+
+  .list-summary-bar {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    padding: 8px 12px;
+  }
+
+  .summary-stat-pill {
     padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
+
+  .summary-stat-pill .stat-val {
+    font-size: 13px;
+  }
+
+  .list-summary-actions {
+    grid-column: span 2;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+
+  /* Responsive Table */
+  .m3-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .m3-table {
+    min-width: 720px;
+  }
+
+  .m3-table th, .m3-table td {
+    padding: 10px 10px;
+    font-size: 12px;
+  }
+
+  /* 7. Dialogs Mobile Tuning */
+  .m3-dialog-backdrop {
+    padding: 12px;
+  }
+
+  .m3-dialog {
+    width: 100%;
+    max-width: 440px;
+    max-height: calc(88vh - env(safe-area-inset-bottom));
+    border-radius: 20px;
+  }
+
+  .form-input, .form-select {
+    font-size: 16px !important; /* Prevents auto-zoom in iOS Safari */
+    min-height: 42px;
+  }
+
+  .m3-btn {
+    min-height: 42px;
+    padding: 10px 16px;
+  }
+}
+
+/* --- Compact Phones (<= 480px) --- */
+@media (max-width: 480px) {
+  .top-app-bar {
+    padding: 4px 8px;
+    gap: 4px;
+  }
+
+  .brand-section {
+    gap: 6px;
+  }
+
+  .brand-title-wrap h1 {
+    font-size: 12.5px;
+  }
+
+  .brand-badge {
+    display: none; /* Hide badge on very small screens to save space */
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .icon-btn svg {
+    width: 17px !important;
+    height: 17px !important;
+  }
+
+  .admin-session-chip {
+    padding: 2px 5px;
+    font-size: 10px;
+  }
+
+  .admin-user-text {
+    display: none; /* Only show dot & logout on smallest phones */
+  }
+
+  .spec-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .drawer-tabs {
+    gap: 4px;
+  }
+
+  .drawer-tab {
+    padding: 8px 10px;
+    font-size: 11px;
   }
 }
 

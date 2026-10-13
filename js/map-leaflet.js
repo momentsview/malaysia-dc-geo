@@ -324,7 +324,9 @@ class MalaysiaDataCenterMap {
 
   selectFacility(dc) {
     if (!dc) return;
-    this.map.flyTo([dc.lat, dc.lng], 12, {
+    const isMobile = window.innerWidth <= 768;
+    const targetLat = isMobile ? dc.lat - 0.018 : dc.lat;
+    this.map.flyTo([targetLat, dc.lng], isMobile ? 12 : 12, {
       duration: 1.2,
       easeLinearity: 0.25
     });

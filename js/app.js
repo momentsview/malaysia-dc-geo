@@ -115,6 +115,11 @@ class DataCenterApp {
     this.initAdminAuth();
     this.setTheme(this.theme, false);
     this.initEvents();
+    // Auto-collapse side drawer on mobile so the interactive map is immediately visible
+    if (window.innerWidth <= 768 && this.sideDrawer && this.openDrawerBtn) {
+      this.sideDrawer.classList.add("collapsed");
+      this.openDrawerBtn.style.display = "flex";
+    }
     this.populateOperatorFilter();
     this.updateStatsCounters();
     this.renderProjectCards();
@@ -1182,6 +1187,11 @@ class DataCenterApp {
         const id = card.dataset.id;
         const dc = this.allData.find(item => item.id === id);
         if (dc) {
+          // On mobile, collapse drawer so the user sees the map & bottom sheet
+          if (window.innerWidth <= 768 && this.sideDrawer && this.openDrawerBtn) {
+            this.sideDrawer.classList.add("collapsed");
+            this.openDrawerBtn.style.display = "flex";
+          }
           this.map.selectFacility(dc);
           this.showDetailModal(dc);
         }
